@@ -1,0 +1,3 @@
+﻿  pch.cpp
+  ObjectTracking.cpp
+opencv_world400d.lib(opencv_world400d.dll) : fatal error LNK1112: module machine type 'x64' conflicts with target machine type 'x86'
