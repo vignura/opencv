@@ -1,0 +1,14 @@
+1, camera.set() , 3 ,  ms 
+2, waitkey(500) , 501 ,  ms 
+3, camrea.read() @ res (512x288) , 511 ,  ms 
+4, imshow() , 37 ,  ms 
+5, cvtColor() , 4 ,  ms 
+6, GaussianBlur() , 71 ,  ms 
+7, camera.read() , 12 ,  ms 
+8, cvtColor() , 7 ,  ms 
+9, GaussianBlur() , 78 ,  ms 
+10, absdiff() , 3 ,  ms 
+11, threshold() , 2 ,  ms 
+12, dialate() , 6 ,  ms 
+13, findContours() , 4ms 
+14, ImWrite() , 145 ,  ms ;

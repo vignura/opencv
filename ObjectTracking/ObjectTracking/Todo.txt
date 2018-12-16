@@ -1,0 +1,4 @@
+1) Set delata threshold based on illuminance level
+2) get hardware fixture for mounting camera
+3) Test delta thresholds with ir camera  
+4) Test the Logitech camera with IR led array
