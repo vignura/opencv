@@ -9,6 +9,7 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include <iostream>
 #include <opencv2/opencv.hpp>
 
 #endif //PCH_H
