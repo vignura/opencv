@@ -8,8 +8,12 @@
 
 #ifndef PCH_H
 #define PCH_H
-
+// opencv headers
 #include <iostream>
 #include <opencv2/opencv.hpp>
+// win threads
+#include <windows.h>
+#include <tchar.h>
+#include <strsafe.h>
 
 #endif //PCH_H

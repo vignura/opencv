@@ -1,7 +1,7 @@
 #pragma once
 
 #define MAX_CAM_COUNT			5
-#define MAX_TEST_FRAMES			25
+#define MAX_TEST_FRAMES			100
 
 #define MAX_TEST_RESOLUTIONS	4
 #define TEST_RESOLUTIONS	{{512, 288},\

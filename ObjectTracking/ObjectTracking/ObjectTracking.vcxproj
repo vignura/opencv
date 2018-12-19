@@ -160,6 +160,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ObjectTracking.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
