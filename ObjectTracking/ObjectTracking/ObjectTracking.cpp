@@ -2,15 +2,8 @@
 //
 #include "pch.h"
 #include "ObjectTracking.h"
+#include "MotionDectAlgo.h"
 
-using namespace std;
-using namespace cv;
-
-#define MIN_CONTOUR_AREA					500
-#define MIN_DELTA_THRESHOLD					20
-#define MIN_DELTA_AREA_THRESHOLD			0.15
-#define MAX_IMGAE_LIMIT						1000
-#define IMG_DIRECTORY						"Img/"
 
 S_GLOBAL_HANDLE g_Handle;
 
@@ -63,11 +56,11 @@ int CreateThreads()
 
 	if (g_Handle.hThreadAcqFrame == NULL)
 	{
-		printf("Thread Acquire Frame creation Failed..!");
+		printf("\nThread Acquire Frame creation Failed..!");
 	}
 	else
 	{
-		printf("Thread Acquire Frame creation Success");
+		printf("\nThread Acquire Frame creation Success");
 	}
 	
 	Sleep(500);
@@ -83,11 +76,11 @@ int CreateThreads()
 
 	if (g_Handle.hThreadMotionDetect == NULL)
 	{
-		printf("Thread Motion Detect creation Failed..!");
+		printf("\nThread Motion Detect creation Failed..!");
 	}
 	else
 	{
-		printf("Thread Motion Detect creation Success");
+		printf("\nThread Motion Detect creation Success");
 	}
 
 	// create Image logging thread
@@ -101,28 +94,29 @@ int CreateThreads()
 
 	if (g_Handle.hThreadLogImage == NULL)
 	{
-		printf("Thread Log Image creation Failed..!");
+		printf("\nThread Log Image creation Failed..!");
 	}
 	else
 	{
-		printf("Thread Log Image creation Success");
+		printf("\nThread Log Image creation Success");
 	}
 	return 0;
 }
 
 DWORD WINAPI ThreadMotionDetect(LPVOID lpParam)
 {
-	char arrcMsg[128] = { 0 };
-	Mat gray, frameDelta, thresh, frame;
-	vector<vector<Point> > cnts;
-	double dContAreaSum = 0;
-	double dMaxSum = 0;
-	double dContArea = 0;
-	float fFPS = 0;
 	int iLoopCount = 0;
-	TickMeter T;
-	TickMeter CamTimer;
+	int iRetVal = 0;
+	int isMotionDeltaSet = false;
+	int isSceneChanged = false;
+	float fFPS = 0;
+	char arrcMsg[128] = { 0 };
 	
+	TickMeter T;
+	Mat gray, thresh, frame;
+	Mat frameDelta[2];
+	vector<vector<Point> > cnts;
+
 	while (g_Handle.isAcqStarted == false)
 	{
 		Sleep(100);
@@ -132,54 +126,38 @@ DWORD WINAPI ThreadMotionDetect(LPVOID lpParam)
 	{
 		frame = g_Handle.frame.clone();
 
-		//convert to grayscale
+		// convert to grayscale
 		cvtColor(frame, gray, COLOR_BGR2GRAY);
 		GaussianBlur(gray, gray, Size(21, 21), 0);
 
-		//compute difference between first frame and current frame
-		absdiff(g_Handle.RefFrame, gray, frameDelta);
-		threshold(frameDelta, thresh, MIN_DELTA_THRESHOLD, 255, THRESH_BINARY);
-
-		dilate(thresh, thresh, Mat(), Point(-1, -1), 2);
-		findContours(thresh, cnts, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-
-		dContAreaSum = 0;
-		g_Handle.isMotionDetected = false;
-		for (int i = 0; i < cnts.size(); i++)
+		// detect any changes in scene
+		MotionDetect(MD_IMG_SUBTRACT, gray, g_Handle.RefFrame, frameDelta[0], &isSceneChanged);
+		
+		// detect any movements in scene
+		if (isSceneChanged == true)
 		{
-			dContArea = contourArea(cnts[i]);
-			dContAreaSum += dContArea;
+			MotionDetect(MD_TIME_DIFFERENCE, gray, g_Handle.RefFrame, frameDelta[1], &g_Handle.isMotionDetected);
+			isMotionDeltaSet = true;
+		}
 
-			if (dMaxSum < dContAreaSum)
-			{
-				dMaxSum = dContAreaSum;
-
-				// store the image
-				sprintf_s(arrcMsg, "%sMaxSum.png", IMG_DIRECTORY);
-				//ImWrite(arrcMsg, frame);
-			}
-
-			if (contourArea(cnts[i]) < MIN_CONTOUR_AREA)
-			{
-				continue;
-			}
-			else
-			{
-				g_Handle.isMotionDetected = true;
-			}
+		if (isSceneChanged == true)
+		{
+			sprintf_s(arrcMsg, "Scene changed");
+			putText(frame, arrcMsg, Point(10, 20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0, 0, 255), 2);
 		}
 
 		if (g_Handle.isMotionDetected == true)
 		{
-			if ((dContAreaSum / 100) > MIN_DELTA_AREA_THRESHOLD)
-			{
-				sprintf_s(arrcMsg, "Motion Detected: [%0.0f]", (dContAreaSum / 100));
-				putText(frame, arrcMsg, Point(10, 20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0, 0, 255), 2);
-			}
+			sprintf_s(arrcMsg, "Motion Detected");
+			putText(frame, arrcMsg, Point((FRAME_WIDTH / 2), 20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0, 0, 255), 2);
 		}
 
 		imshow("Camera", frame);
-		imshow("Delta", frameDelta);
+		imshow("Scene change Delta", frameDelta[0]);
+		
+		if (isMotionDeltaSet == true) {
+			imshow("Motion Delta", frameDelta[1]);
+		}
 
 		if (waitKey(1) == 27) {
 			//exit if ESC is pressed
@@ -190,15 +168,15 @@ DWORD WINAPI ThreadMotionDetect(LPVOID lpParam)
 		if (iLoopCount > 100)
 		{
 			T.stop();
-			fFPS = (iLoopCount / T.getTimeSec());
+			fFPS = (float)(iLoopCount / T.getTimeSec());
 			printf("\r\nFPS: %2.2f", fFPS);
-			printf("\tcontours: %d", cnts.size());
+			printf("\tcontours: %zd", cnts.size());
 			T.reset();
 			T.start();
 			iLoopCount = 0;
 		}
 
-		Sleep(15);
+		Sleep(25);
 	}
 
 	return 0;
@@ -210,7 +188,7 @@ DWORD WINAPI ThreadAcqFrame(LPVOID lpParam)
 	Mat frame;
 	VideoCapture camera(1);
 
-	Size size(512, 288);
+	Size size(FRAME_WIDTH, FRAME_HEIGHT);
 	//set the video size to 512x288 to process faster
 	camera.set(CAP_PROP_FRAME_WIDTH, 640);
 	camera.set(CAP_PROP_FRAME_HEIGHT, 480);
@@ -249,6 +227,7 @@ DWORD WINAPI ThreadLogImage(LPVOID lpParam)
 			if (iImageCount >= MAX_IMGAE_LIMIT)
 			{
 				iImageCount = 0;
+				break;
 			}
 			else
 			{
@@ -257,9 +236,10 @@ DWORD WINAPI ThreadLogImage(LPVOID lpParam)
 
 			sprintf_s(arrcMsg, "%sImg-%0d.png", IMG_DIRECTORY, iImageCount);
 			ImWrite(arrcMsg, g_Handle.frame);
+			g_Handle.isMotionDetected = false;
 		}
 
-		Sleep(30);
+		Sleep(100);
 	}
 
 	return 0;
