@@ -105,22 +105,27 @@ int CreateThreads()
 
 DWORD WINAPI ThreadMotionDetect(LPVOID lpParam)
 {
-	int iLoopCount = 0;
 	int iRetVal = 0;
 	int isMotionDeltaSet = false;
 	int isSceneChanged = false;
-	float fFPS = 0;
+	float fMotionFPS = 0;
+	float fCamFPS = 0;
 	char arrcMsg[128] = { 0 };
 	
 	TickMeter T;
 	Mat gray, thresh, frame;
 	Mat frameDelta[2];
-	vector<vector<Point> > cnts;
+	
+	g_Handle.fFPSScalingFactor = 1.0f;
 
 	while (g_Handle.isAcqStarted == false)
 	{
 		Sleep(100);
 	}
+
+	T.reset();
+	T.start();
+
 
 	while (1)
 	{
@@ -164,19 +169,23 @@ DWORD WINAPI ThreadMotionDetect(LPVOID lpParam)
 			break;
 		}
 
-		iLoopCount++;
-		if (iLoopCount > 100)
+		g_Handle.iMotionCount++;
+		if (g_Handle.iMotionCount > 100)
 		{
 			T.stop();
-			fFPS = (float)(iLoopCount / T.getTimeSec());
-			printf("\r\nFPS: %2.2f", fFPS);
-			printf("\tcontours: %zd", cnts.size());
+			fCamFPS = (float)(g_Handle.iFrameCount / T.getTimeSec());
+			fMotionFPS = (float)(g_Handle.iMotionCount / T.getTimeSec());
+			g_Handle.fFPSScalingFactor = fMotionFPS / fCamFPS;
+
+			printf("\r\nMotion FPS: %2.2f \tCam FPS: %2.2f \tSF: %2.2f", fMotionFPS, fCamFPS, g_Handle.fFPSScalingFactor);
 			T.reset();
 			T.start();
-			iLoopCount = 0;
+
+			g_Handle.iFrameCount = 0;
+			g_Handle.iMotionCount = 0;
 		}
 
-		Sleep(25);
+		Sleep((30 * g_Handle.fFPSScalingFactor));
 	}
 
 	return 0;
@@ -185,10 +194,10 @@ DWORD WINAPI ThreadMotionDetect(LPVOID lpParam)
 DWORD WINAPI ThreadAcqFrame(LPVOID lpParam)
 {
 	int iCount = 0;
-	Mat frame;
+	float fFPS = 0;
 	VideoCapture camera(1);
-
 	Size size(FRAME_WIDTH, FRAME_HEIGHT);
+
 	//set the video size to 512x288 to process faster
 	camera.set(CAP_PROP_FRAME_WIDTH, 640);
 	camera.set(CAP_PROP_FRAME_HEIGHT, 480);
@@ -196,22 +205,26 @@ DWORD WINAPI ThreadAcqFrame(LPVOID lpParam)
 	while (iCount < 10)
 	{
 		waitKey(500);
-		camera.read(frame);
+		camera.read(g_Handle.OrgFrame);
 		iCount++;
 	}
 
 	//convert to grayscale and set the first frame
-	resize(frame, frame, size);
-	cvtColor(frame, frame, COLOR_BGR2GRAY);
-	GaussianBlur(frame, g_Handle.RefFrame, Size(21, 21), 0);
+	resize(g_Handle.OrgFrame, g_Handle.frame, size);
+	cvtColor(g_Handle.frame, g_Handle.frame, COLOR_BGR2GRAY);
+	GaussianBlur(g_Handle.frame, g_Handle.RefFrame, Size(21, 21), 0);
 
-	g_Handle.isAcqStarted = true;
-	while (camera.read(frame)) 
+	g_Handle.iFrameCount = 0;
+
+	while (camera.read(g_Handle.OrgFrame))
 	{
-		resize(frame, g_Handle.frame, size);
+		resize(g_Handle.OrgFrame, g_Handle.frame, size);
 		Sleep(15);
+
+		g_Handle.isAcqStarted = true;
+		g_Handle.iFrameCount++;
 	}
-	
+
 	return 0;
 }
 
@@ -235,11 +248,12 @@ DWORD WINAPI ThreadLogImage(LPVOID lpParam)
 			}
 
 			sprintf_s(arrcMsg, "%sImg-%0d.png", IMG_DIRECTORY, iImageCount);
-			ImWrite(arrcMsg, g_Handle.frame);
+			ImWrite(arrcMsg, g_Handle.OrgFrame);
 			g_Handle.isMotionDetected = false;
+			Sleep(25);
 		}
 
-		Sleep(100);
+		Sleep(1);
 	}
 
 	return 0;

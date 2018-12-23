@@ -21,12 +21,18 @@
     <ClInclude Include="ObjectTracking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MotionDectAlgo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ObjectTracking.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MotionDectAlgo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

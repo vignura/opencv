@@ -1,3 +1,0 @@
-﻿  ObjectTracking.cpp
-c:\users\vignesh\desktop\opencv\objecttracking\objecttracking\objecttracking.cpp(193): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  ObjectTracking.vcxproj -> C:\Users\Vignesh\Desktop\opencv\ObjectTracking\x64\Debug\ObjectTracking.exe

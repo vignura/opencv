@@ -1,3 +1,0 @@
-﻿  pch.cpp
-  OpenImage.cpp
-LINK : fatal error LNK1104: cannot open file 'opencv_world400d.lib'

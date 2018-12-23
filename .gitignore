@@ -11,6 +11,8 @@
 *.gch
 *.pch
 *.ipch
+*.pdb
+*.idb
 
 # Compiled Dynamic libraries
 *.so
@@ -34,3 +36,6 @@
 
 # directories
 /.vs
+
+# logs
+*.log

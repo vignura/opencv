@@ -4,6 +4,7 @@
 using namespace cv;
 using namespace std;
 
+#define MAX_CAM_FPS							30
 #define FRAME_WIDTH							512
 #define FRAME_HEIGHT						288
 
@@ -12,6 +13,7 @@ using namespace std;
 
 typedef struct GlobalHandle{
 	
+	Mat OrgFrame;
 	Mat frame;
 	Mat RefFrame;
 
@@ -26,6 +28,11 @@ typedef struct GlobalHandle{
 
 	int isAcqStarted;
 	int isMotionDetected;
+
+	int iFrameCount;
+	int iMotionCount;
+
+	float fFPSScalingFactor;
 
 }S_GLOBAL_HANDLE;
 

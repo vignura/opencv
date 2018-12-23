@@ -4,9 +4,8 @@ using namespace cv;
 using namespace std;
 
 
-#define MIN_CONTOUR_AREA					1000
-#define MIN_DELTA_THRESHOLD					30
-#define MIN_DELTA_AREA_THRESHOLD			0.25
+#define MIN_CONTOUR_AREA					500
+#define MIN_DELTA_THRESHOLD					25
 
 
 // Algorithms
