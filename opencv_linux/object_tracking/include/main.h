@@ -8,9 +8,12 @@
 #include "ObjectTracking.h"
 #include "MotionDectAlgo.h"
 #include "Mutex.h"
+#include "GPIOConst.h"
+#include "GPIOManager.h"
 
 using namespace cv;
 using namespace std;
+using namespace GPIO;
 
 #ifdef BEAGLE_COMPILE
 	#define CAMID								0
@@ -26,6 +29,8 @@ using namespace std;
 #define MAX_IMGAE_LIMIT						10000
 #define IMG_DIRECTORY						"Img/"
 
+#define ALERT_PIN 							"P8_7"
+
 typedef struct GlobalHandle{
 	
 	Mat OrgFrame;
@@ -35,6 +40,7 @@ typedef struct GlobalHandle{
 	pthread_t iThreadAcqFrameID;
 	pthread_t iThreadMotionDetectID;
 	pthread_t iThreadLogImageID;
+	pthread_t iThreadAlertID;
 
 	int isAcqStarted;
 	int isMotionDetected;
@@ -46,10 +52,18 @@ typedef struct GlobalHandle{
 	MyMutex FrameMutex;
 	MyMutex LogMutex;
 
+	// GPIO 
+	GPIOConst 		gpioConst;
+	GPIOManager		BBgpio;
+
+	int iAlertPin;
+
 }S_GLOBAL_HANDLE;
 
 extern S_GLOBAL_HANDLE g_Handle;
 
 int CreateThreads();
 int JoinThreads();
+int GPIOInit();
+
 #endif // _MAIN_H_

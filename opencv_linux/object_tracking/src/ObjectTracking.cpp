@@ -241,3 +241,23 @@ void* ThreadLogImage(void *parm)
 
 	return 0;
 }
+
+void* ThreadAlert(void *parm)
+{
+	
+	while(1)
+	{
+		if(g_Handle.isMotionDetected == true)
+		{
+			g_Handle.BBgpio.setValue(g_Handle.iAlertPin, HIGH);
+			usleep(2000 * 1000);
+			g_Handle.BBgpio.setValue(g_Handle.iAlertPin, LOW);
+		}
+		else
+		{
+			usleep(10 * 1000);
+		}
+	}
+
+	return 0;
+}
