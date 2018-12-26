@@ -23,6 +23,7 @@ int CreateThreads()
 
 	g_Handle.isAcqStarted = false;
 
+#if 1
 	printf("\r\nCreating Acquire Frame thread");
 	// create Frame Acqusition thread
 	iRetVal = pthread_create(&g_Handle.iThreadAcqFrameID, NULL, ThreadAcqFrame, NULL);
@@ -32,9 +33,10 @@ int CreateThreads()
 	}
 	else
 	{
-		printf("\nThread Acquire Frame creation Success");
+		printf("\nThread Acquire Frame creation Success: ID : %d", g_Handle.iThreadAcqFrameID);
 	}
-	
+#endif
+
 	usleep(500 * 1000);
 	printf("\r\nCreating Motion Detect thread");
 	iRetVal = pthread_create(&g_Handle.iThreadMotionDetectID, NULL, ThreadMotionDetect, NULL);
@@ -44,9 +46,10 @@ int CreateThreads()
 	}
 	else
 	{
-		printf("\nThread Motion Detect creation Success");
+		printf("\nThread Motion Detect creation Success: ID : %d", g_Handle.iThreadMotionDetectID);
 	}
 
+#if 1
 	// create Image logging thread
 	printf("\r\nCreating Log Image thread");
 	iRetVal = pthread_create(&g_Handle.iThreadLogImageID, NULL, ThreadLogImage, NULL);
@@ -56,8 +59,9 @@ int CreateThreads()
 	}
 	else
 	{
-		printf("\nThread Log Image creation Success");
+		printf("\nThread Log Image creation Success: ID : %d", g_Handle.iThreadLogImageID);
 	}
+#endif
 	return 0;
 }
 
