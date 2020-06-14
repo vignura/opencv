@@ -1,6 +1,16 @@
 #include "pch.h"
 #include "main.h"
 
+void create_segfault()
+{
+	int a = 0xAA;
+
+	/* accessing a null pointer to cause segfault */
+	*((int *)0xBB) = 1;
+	
+	return;
+}
+
 int MotionDetect(int iAlgorithm,  Mat &Frame, Mat &RefFrame, Mat &FrameDelta, int *isMotionDetected)
 {
 	switch (iAlgorithm)
@@ -22,6 +32,8 @@ int MotionDetect(int iAlgorithm,  Mat &Frame, Mat &RefFrame, Mat &FrameDelta, in
 
 int ThreshContour(vector<vector<Point>> &Contours, int iAreaThreshold)
 {
+	// create_segfault();
+
 	for (int i = 0; i < Contours.size(); i++)
 	{
 		if (contourArea(Contours[i]) < iAreaThreshold)

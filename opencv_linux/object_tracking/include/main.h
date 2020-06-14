@@ -2,7 +2,7 @@
 #define _MAIN_H_
 
 // comment the below link for desktop compile
-#define BEAGLE_COMPILE
+//#define BEAGLE_COMPILE
 
 // project headers
 #include "ObjectTracking.h"
@@ -21,6 +21,7 @@ using namespace GPIO;
 	#define CAMID								1
 #endif
 
+#define STACK_TRACE_BUFFER_SIZE 			128
 #define	FRAMES_TO_PROCESS					50
 #define MAX_CAM_FPS							30
 #define FRAME_WIDTH							512

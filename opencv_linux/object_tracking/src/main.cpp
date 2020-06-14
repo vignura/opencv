@@ -3,19 +3,53 @@
 
 S_GLOBAL_HANDLE g_Handle;
 
+void sigsegv_handler(int signo)
+{
+	void *array[STACK_TRACE_BUFFER_SIZE];
+	int iRetVal;
+
+	printf("\nSegfault: %d\n", signo);
+	printf("Stack Trace:\n");
+	iRetVal = backtrace(array, STACK_TRACE_BUFFER_SIZE);
+	// printf("backtrace returned: %d\n", iRetVal);
+	// backtrace_symbols_fd(array, SIZE, STDERR_FILENO);
+	backtrace_symbols_fd(array, iRetVal, STDERR_FILENO);
+	abort();
+}
 
 int main() 
 {
 	int iRetVal = 0;
 	
+	/* initialize segfault handler */
+	signal(SIGSEGV, sigsegv_handler);
+
 	printf("\r\nMotion Detect");
 
+#ifdef BEAGLE_COMPILE
 	iRetVal = GPIOInit();
+	if(iRetVal != 0)
+	{
+		printf("ERROR: GPIOInit()\n");
+		return iRetVal;
+	}
+#endif
 
+	/* create threads */
 	iRetVal = CreateThreads();
+	if(iRetVal != 0)
+	{
+		printf("ERROR: CreateThreads()\n");
+		return iRetVal;
+	}
 
-	// join threads
+	/*join threads*/
 	iRetVal = JoinThreads();
+	if(iRetVal != 0)
+	{
+		printf("ERROR: JoinThreads()\n");
+		return iRetVal;
+	}
 
 	return 0;
 }
@@ -66,8 +100,9 @@ int CreateThreads()
 	}
 #endif
 
+#ifdef BEAGLE_COMPILE
 	// create Image logging thread
-	printf("\r\nCreating Log Image thread");
+	printf("\r\nCreating Alert Image thread");
 	iRetVal = pthread_create(&g_Handle.iThreadAlertID, NULL, ThreadAlert, NULL);
 	if (iRetVal != 0)
 	{
@@ -77,7 +112,7 @@ int CreateThreads()
 	{
 		printf("\nThread Alert creation Success: ID : %d", g_Handle.iThreadAlertID);
 	}
-
+#endif
 	return 0;
 }
 

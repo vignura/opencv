@@ -5,10 +5,11 @@ SDIR = ./src
 PCHSRC = $(IDIR)/pch.h
 PCHOUT = $(IDIR)/pch.h.gch
 HFILES = $(IDIR)/*.h
-OFILES = $(ODIR)/main.o $(ODIR)/MotionDectAlgo.o $(ODIR)/ObjectTracking.o $(ODIR)/Mutex.o
-
+OFILES = $(ODIR)/main.o $(ODIR)/MotionDectAlgo.o $(ODIR)/ObjectTracking.o $(ODIR)/Mutex.o $(ODIR)/GPIOConst.o\
+			$(ODIR)/GPIOManager.o
+CVIDIR = /opt/opencv-4.0.0/include/
 CC = g++
-CFLAGS = -I $(IDIR)
+CFLAGS = -I $(IDIR) -I $(CVIDIR) -rdynamic
 
 OPENCVLIBS = \
  -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired -lopencv_calib3d -lopencv_ccalib -lopencv_core -lopencv_datasets\
@@ -30,7 +31,7 @@ Object_Tracking.out: $(PCHOUT) $(OFILES)
 	#=================== SRC Compilation SUCCESS ================
 	#
 	#$(CC) -o $@ $(OFILES) $(LIBS) `pkg-config --cflags --libs opencv`
-	$(CC) -o $@ $(OFILES) $(LIBS)
+	$(CC) -o $@ $(OFILES) $(LIBS) $(CFLAGS)
 	#	
 	#-------------------- Compilation ----------------- : SUCCESS
 	#
@@ -50,6 +51,12 @@ $(ODIR)/ObjectTracking.o: $(SDIR)/ObjectTracking.cpp $(HFILES)
 	$(CC) -include $(PCHSRC) -c -o $@ $< $(CFLAGS)
 
 $(ODIR)/Mutex.o: $(SDIR)/Mutex.cpp $(HFILES)
+	$(CC) -include $(PCHSRC) -c -o $@ $< $(CFLAGS)
+
+$(ODIR)/GPIOConst.o: $(SDIR)/GPIOConst.cpp $(HFILES)
+	$(CC) -include $(PCHSRC) -c -o $@ $< $(CFLAGS)
+
+$(ODIR)/GPIOManager.o: $(SDIR)/GPIOManager.cpp $(HFILES)
 	$(CC) -include $(PCHSRC) -c -o $@ $< $(CFLAGS)
 
 clean:
