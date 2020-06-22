@@ -99,12 +99,14 @@ void* ThreadMotionDetect(void *parm)
 				putText(frame, arrcMsg, Point((FRAME_WIDTH / 2), 20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0, 0, 255), 2);
 			}
 			
-			imshow("Camera", frame);
-			imshow("Scene change Delta", frameDelta[0]);
-		
-			if (isMotionDeltaSet == true) {
-				imshow("Motion Delta", frameDelta[1]);
-			}
+			#ifndef BEAGLE_COMPILE
+				imshow("Camera", frame);
+				imshow("Scene change Delta", frameDelta[0]);
+			
+				if (isMotionDeltaSet == true) {
+					imshow("Motion Delta", frameDelta[1]);
+				}
+			#endif
 			
 		#endif 
 		
