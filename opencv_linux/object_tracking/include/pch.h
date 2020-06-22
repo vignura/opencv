@@ -11,6 +11,10 @@
 #include <unistd.h>
 #include <signal.h> 
 #include <execinfo.h>
+#include <semaphore.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+
 
 // opencv headers
 #include <opencv2/opencv.hpp>

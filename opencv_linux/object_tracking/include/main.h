@@ -18,7 +18,7 @@ using namespace GPIO;
 #ifdef BEAGLE_COMPILE
 	#define CAMID								0
 #else
-	#define CAMID								1
+	#define CAMID								0
 #endif
 
 #define STACK_TRACE_BUFFER_SIZE 			128
@@ -31,6 +31,7 @@ using namespace GPIO;
 #define IMG_DIRECTORY						"Img/"
 
 #define ALERT_PIN 							"P8_7"
+#define SEM_NAME							"ImgAcqSem"
 
 typedef struct GlobalHandle{
 	
@@ -57,6 +58,8 @@ typedef struct GlobalHandle{
 	GPIOConst 		gpioConst;
 	GPIOManager		BBgpio;
 
+	sem_t *sem;
+
 	int iAlertPin;
 
 }S_GLOBAL_HANDLE;
@@ -66,5 +69,6 @@ extern S_GLOBAL_HANDLE g_Handle;
 int CreateThreads();
 int JoinThreads();
 int GPIOInit();
+void exit_app();
 
 #endif // _MAIN_H_

@@ -33,6 +33,7 @@ typedef struct GlobalHandle{
 	int iMotionCount;
 
 	float fFPSScalingFactor;
+	sem_t *sem;
 
 }S_GLOBAL_HANDLE;
 

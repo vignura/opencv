@@ -43,16 +43,19 @@ void* ThreadMotionDetect(void *parm)
 	
 	g_Handle.fFPSScalingFactor = 1.0f;
 
-	while (g_Handle.isAcqStarted == false)
-	{
-		usleep(100 * 1000);
-	}
+	// while (g_Handle.isAcqStarted == false)
+	// {
+	// 	usleep(100 * 1000);
+	// }
 
 	T.reset();
 	T.start();
 
 	while (1)
 	{
+		/* wait for acqusition thread to grap a frame */
+		sem_wait(g_Handle.sem);
+
 		excT.reset();
 		excT.start();
 
@@ -153,7 +156,7 @@ void* ThreadMotionDetect(void *parm)
 			fExcTime = 0;
 		}
 
-		usleep(fSleepTime * 1000);
+		// usleep(fSleepTime * 1000);
 		//usleep(30 * 1000);
 	}
 
@@ -198,8 +201,11 @@ void* ThreadAcqFrame(void *parm)
 		// lock the mutex
 		g_Handle.LogMutex.Lock(g_Handle.iThreadAcqFrameID);
 
-		g_Handle.isAcqStarted = true;
+		// g_Handle.isAcqStarted = true;
 		g_Handle.iFrameCount++;
+
+		/* post after grabbing frame */
+		sem_post(g_Handle.sem);
 	}
 
 	return 0;

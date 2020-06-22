@@ -14,6 +14,33 @@ void sigsegv_handler(int signo)
 	// printf("backtrace returned: %d\n", iRetVal);
 	// backtrace_symbols_fd(array, SIZE, STDERR_FILENO);
 	backtrace_symbols_fd(array, iRetVal, STDERR_FILENO);
+	exit_app();
+}
+
+void sigint_handler(int signo)
+{
+	printf("\nSig Interrupt: %d\n", signo);
+	exit_app();
+}
+
+void exit_app()
+{
+	int iRetVal = 0;
+
+	/* close the sempahore */
+	iRetVal = sem_close(g_Handle.sem);
+	if(iRetVal != 0)
+	{
+		perror("sem_close");
+	}
+
+	/* unlink the sempahore */
+	iRetVal = sem_unlink(SEM_NAME);
+	if(iRetVal != 0)
+	{
+		perror("sem_unlink");
+	}
+
 	abort();
 }
 
@@ -23,33 +50,59 @@ int main()
 	
 	/* initialize segfault handler */
 	signal(SIGSEGV, sigsegv_handler);
+	signal(SIGINT, sigint_handler);
 
-	printf("\r\nMotion Detect");
+	/* create a sempahore */
+	g_Handle.sem = sem_open(SEM_NAME, O_CREAT | O_EXCL, 0, 0);
+	if(g_Handle.sem == NULL)
+	{
+		printf("ERRPR: sem_open\n");
+		//return -1;
+	}
+	else
+	{
 
-#ifdef BEAGLE_COMPILE
-	iRetVal = GPIOInit();
+		printf("\r\nMotion Detect");
+
+	#ifdef BEAGLE_COMPILE
+		iRetVal = GPIOInit();
+		if(iRetVal != 0)
+		{
+			printf("ERROR: GPIOInit()\n");
+			return iRetVal;
+		}
+	#endif
+
+		/* create threads */
+		iRetVal = CreateThreads();
+		if(iRetVal != 0)
+		{
+			printf("ERROR: CreateThreads()\n");
+			return iRetVal;
+		}
+
+		/*join threads*/
+		iRetVal = JoinThreads();
+		if(iRetVal != 0)
+		{
+			printf("ERROR: JoinThreads()\n");
+			return iRetVal;
+		}
+	}
+	/* close the sempahore */
+	iRetVal = sem_close(g_Handle.sem);
 	if(iRetVal != 0)
 	{
-		printf("ERROR: GPIOInit()\n");
-		return iRetVal;
-	}
-#endif
-
-	/* create threads */
-	iRetVal = CreateThreads();
-	if(iRetVal != 0)
-	{
-		printf("ERROR: CreateThreads()\n");
-		return iRetVal;
+		perror("sem_close");
 	}
 
-	/*join threads*/
-	iRetVal = JoinThreads();
+	/* unlink the sempahore */
+	iRetVal = sem_unlink(SEM_NAME);
 	if(iRetVal != 0)
 	{
-		printf("ERROR: JoinThreads()\n");
-		return iRetVal;
+		perror("sem_unlink");
 	}
+
 
 	return 0;
 }
